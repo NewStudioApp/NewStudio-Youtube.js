@@ -1,7 +1,7 @@
 {
   "name": "youtubei.js",
   "version": "16.0.1",
-  "description": "A JavaScript client for YouTube's private API, known as InnerTube.",
+  "description": "A JavaScript client for YouTube's private API (Company Fork with Super Thanks Support).",
   "type": "module",
   "types": "./dist/src/platform/lib.d.ts",
   "typesVersions": {
@@ -61,16 +61,6 @@
     }
   },
   "author": "LuanRT <luan.lrt4@gmail.com> (https://github.com/LuanRT)",
-  "funding": [
-    "https://github.com/sponsors/LuanRT"
-  ],
-  "contributors": [
-    "Wykerd (https://github.com/wykerd/)",
-    "MasterOfBob777 (https://github.com/MasterOfBob777)",
-    "patrickkfkan (https://github.com/patrickkfkan)",
-    "akkadaska (https://github.com/akkadaska)",
-    "Absidue (https://github.com/absidue)"
-  ],
   "scripts": {
     "test": "vitest run --reporter verbose",
     "lint": "eslint ./src",
@@ -86,12 +76,11 @@
     "bundle:react-native": "esbuild ./dist/src/platform/react-native.js --bundle --sourcemap --target=es2020 --keep-names --format=esm --platform=neutral --define:global=globalThis --conditions=module --outfile=./bundle/react-native.js",
     "bundle:cf-worker": "esbuild ./dist/src/platform/cf-worker.js --banner:js=\"/* eslint-disable */\" --bundle --sourcemap --target=es2020 --keep-names --format=esm --define:global=globalThis --conditions=module --outfile=./bundle/cf-worker.js --platform=node",
     "build:docs": "typedoc",
-    "prepare": "npm run build",
     "watch": "tspc --watch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LuanRT/YouTube.js.git"
+    "url": "git+https://github.com/YourCompany/YouTube.js.git"
   },
   "files": [
     "dist/",
@@ -126,18 +115,14 @@
     "vitest": "^3.2.4"
   },
   "bugs": {
-    "url": "https://github.com/LuanRT/YouTube.js/issues"
+    "url": "https://github.com/YourCompany/YouTube.js/issues"
   },
-  "homepage": "https://github.com/LuanRT/YouTube.js#readme",
+  "homepage": "https://github.com/YourCompany/YouTube.js#readme",
   "keywords": [
     "api",
     "youtube",
     "innertube",
-    "livechat",
-    "youtube-music",
-    "ytdl",
-    "youtube-studio",
-    "downloader",
-    "ytmusic"
+    "donations",
+    "superthanks"
   ]
 }
