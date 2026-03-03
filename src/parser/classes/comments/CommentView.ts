@@ -11,6 +11,7 @@ import * as ProtoUtils from '../../../utils/ProtoUtils.js';
 import type Actions from '../../../core/Actions.js';
 import type { ApiResponse } from '../../../core/Actions.js';
 import type { RawNode } from '../../index.js';
+import PdgCommentChip from './PdgCommentChip.js'; // NewStudio Custom import
 
 // TODO: Move these types to a different file.
 export type CommentKeys = {
@@ -27,7 +28,7 @@ export type MemberBadge = {
 }
 
 export default class CommentView extends YTNode {
-  static type = 'CommentView';
+  static type = "CommentView";
 
   #actions?: Actions;
 
@@ -60,6 +61,7 @@ export default class CommentView extends YTNode {
   public is_member?: boolean;
   public member_badge?: MemberBadge;
   public author?: Author;
+  public pdg_comment_chip?: PdgCommentChip; // NewStudio Custom Variable
 
   public is_liked?: boolean;
   public is_disliked?: boolean;
@@ -78,19 +80,28 @@ export default class CommentView extends YTNode {
       comment_surface: data.commentSurfaceKey,
       toolbar_state: data.toolbarStateKey,
       toolbar_surface: data.toolbarSurfaceKey,
-      shared: data.sharedKey
+      shared: data.sharedKey,
     };
   }
 
-  applyMutations(comment?: RawNode, toolbar_state?: RawNode, toolbar_surface?: RawNode, comment_surface?: RawNode) {
+  applyMutations(
+    comment?: RawNode,
+    toolbar_state?: RawNode,
+    toolbar_surface?: RawNode,
+    comment_surface?: RawNode,
+  ) {
     if (comment) {
       this.content = Text.fromAttributed(comment.properties.content);
       this.published_time = comment.properties.publishedTime;
       this.author_is_channel_owner = !!comment.author.isCreator;
       this.creator_thumbnail_url = comment.toolbar.creatorThumbnailUrl;
-      
-      this.like_count = comment.toolbar.likeCountNotliked ? comment.toolbar.likeCountNotliked : '0';
-      this.like_count_liked = comment.toolbar.likeCountLiked ? comment.toolbar.likeCountLiked : '0';
+
+      this.like_count = comment.toolbar.likeCountNotliked
+        ? comment.toolbar.likeCountNotliked
+        : "0";
+      this.like_count_liked = comment.toolbar.likeCountLiked
+        ? comment.toolbar.likeCountLiked
+        : "0";
       this.like_count_a11y = comment.toolbar.likeCountA11y;
       this.like_active_tooltip = comment.toolbar.likeActiveTooltip;
       this.like_inactive_tooltip = comment.toolbar.likeInactiveTooltip;
@@ -99,44 +110,72 @@ export default class CommentView extends YTNode {
       this.like_button_a11y = comment.toolbar.likeButtonA11y;
       this.heart_active_tooltip = comment.toolbar.heartActiveTooltip;
       this.reply_count_a11y = comment.toolbar.replyCountA11y;
-      this.reply_count = comment.toolbar.replyCount ? comment.toolbar.replyCount : '0';
+      this.reply_count = comment.toolbar.replyCount
+        ? comment.toolbar.replyCount
+        : "0";
 
       this.is_member = !!comment.author.sponsorBadgeUrl;
 
-      if (Reflect.has(comment.author, 'sponsorBadgeUrl')) {
+      if (Reflect.has(comment.author, "sponsorBadgeUrl")) {
         this.member_badge = {
           url: comment.author.sponsorBadgeUrl,
-          a11y: comment.author.A11y
+          a11y: comment.author.A11y,
         };
       }
 
-      this.author = new Author({
-        simpleText: comment.author.displayName,
-        navigationEndpoint: comment.avatar.endpoint
-      }, comment.author, comment.avatar.image, comment.author.channelId);
+      this.author = new Author(
+        {
+          simpleText: comment.author.displayName,
+          navigationEndpoint: comment.avatar.endpoint,
+        },
+        comment.author,
+        comment.avatar.image,
+        comment.author.channelId,
+      );
     }
 
     if (toolbar_state) {
-      this.is_hearted = toolbar_state.heartState === 'TOOLBAR_HEART_STATE_HEARTED';
-      this.is_liked = toolbar_state.likeState === 'TOOLBAR_LIKE_STATE_LIKED';
-      this.is_disliked = toolbar_state.likeState === 'TOOLBAR_LIKE_STATE_DISLIKED';
+      this.is_hearted =
+        toolbar_state.heartState === "TOOLBAR_HEART_STATE_HEARTED";
+      this.is_liked = toolbar_state.likeState === "TOOLBAR_LIKE_STATE_LIKED";
+      this.is_disliked =
+        toolbar_state.likeState === "TOOLBAR_LIKE_STATE_DISLIKED";
     }
 
     if (toolbar_surface) {
-      if ('prepareAccountCommand' in toolbar_surface) {
-        this.prepare_account_command = new NavigationEndpoint(toolbar_surface.prepareAccountCommand);
+      if ("prepareAccountCommand" in toolbar_surface) {
+        this.prepare_account_command = new NavigationEndpoint(
+          toolbar_surface.prepareAccountCommand,
+        );
       } else {
         this.like_command = new NavigationEndpoint(toolbar_surface.likeCommand);
-        this.dislike_command = new NavigationEndpoint(toolbar_surface.dislikeCommand);
-        this.unlike_command = new NavigationEndpoint(toolbar_surface.unlikeCommand);
-        this.undislike_command = new NavigationEndpoint(toolbar_surface.undislikeCommand);
-        this.reply_command = new NavigationEndpoint(toolbar_surface.replyCommand);
+        this.dislike_command = new NavigationEndpoint(
+          toolbar_surface.dislikeCommand,
+        );
+        this.unlike_command = new NavigationEndpoint(
+          toolbar_surface.unlikeCommand,
+        );
+        this.undislike_command = new NavigationEndpoint(
+          toolbar_surface.undislikeCommand,
+        );
+        this.reply_command = new NavigationEndpoint(
+          toolbar_surface.replyCommand,
+        );
       }
     }
 
     if (comment_surface) {
-      if ('voiceReplyContainerViewModel' in comment_surface) {
-        this.voice_reply_container = Parser.parseItem(comment_surface.voiceReplyContainerViewModel, VoiceReplyContainerView);
+      if ("voiceReplyContainerViewModel" in comment_surface) {
+        this.voice_reply_container = Parser.parseItem(
+          comment_surface.voiceReplyContainerViewModel,
+          VoiceReplyContainerView,
+        );
+      }
+
+      // NewStudio Custom Patch
+      const pdg_data = comment_surface.pdgCommentChip?.pdgCommentChipRenderer;
+      if (pdg_data) {
+        this.pdg_comment_chip = new PdgCommentChip(pdg_data);
       }
     }
   }
@@ -148,13 +187,14 @@ export default class CommentView extends YTNode {
    */
   async like(): Promise<ApiResponse> {
     if (!this.#actions)
-      throw new InnertubeError('Actions instance not set for this comment.');
+      throw new InnertubeError("Actions instance not set for this comment.");
 
-    if (!this.like_command)
-      throw new InnertubeError('Like command not found.');
+    if (!this.like_command) throw new InnertubeError("Like command not found.");
 
     if (this.is_liked)
-      throw new InnertubeError('This comment is already liked.', { comment_id: this.comment_id });
+      throw new InnertubeError("This comment is already liked.", {
+        comment_id: this.comment_id,
+      });
 
     return this.like_command.call(this.#actions);
   }
@@ -166,13 +206,15 @@ export default class CommentView extends YTNode {
    */
   async dislike(): Promise<ApiResponse> {
     if (!this.#actions)
-      throw new InnertubeError('Actions instance not set for this comment.');
+      throw new InnertubeError("Actions instance not set for this comment.");
 
     if (!this.dislike_command)
-      throw new InnertubeError('Dislike command not found.');
+      throw new InnertubeError("Dislike command not found.");
 
     if (this.is_disliked)
-      throw new InnertubeError('This comment is already disliked.', { comment_id: this.comment_id });
+      throw new InnertubeError("This comment is already disliked.", {
+        comment_id: this.comment_id,
+      });
 
     return this.dislike_command.call(this.#actions);
   }
@@ -184,13 +226,15 @@ export default class CommentView extends YTNode {
    */
   async unlike(): Promise<ApiResponse> {
     if (!this.#actions)
-      throw new InnertubeError('Actions instance not set for this comment.');
+      throw new InnertubeError("Actions instance not set for this comment.");
 
     if (!this.unlike_command)
-      throw new InnertubeError('Unlike command not found.');
+      throw new InnertubeError("Unlike command not found.");
 
     if (!this.is_liked)
-      throw new InnertubeError('This comment is not liked.', { comment_id: this.comment_id });
+      throw new InnertubeError("This comment is not liked.", {
+        comment_id: this.comment_id,
+      });
 
     return this.unlike_command.call(this.#actions);
   }
@@ -202,13 +246,15 @@ export default class CommentView extends YTNode {
    */
   async undislike(): Promise<ApiResponse> {
     if (!this.#actions)
-      throw new InnertubeError('Actions instance not set for this comment.');
+      throw new InnertubeError("Actions instance not set for this comment.");
 
     if (!this.undislike_command)
-      throw new InnertubeError('Undislike command not found.');
+      throw new InnertubeError("Undislike command not found.");
 
     if (!this.is_disliked)
-      throw new InnertubeError('This comment is not disliked.', { comment_id: this.comment_id });
+      throw new InnertubeError("This comment is not disliked.", {
+        comment_id: this.comment_id,
+      });
 
     return this.undislike_command.call(this.#actions);
   }
@@ -221,25 +267,26 @@ export default class CommentView extends YTNode {
    */
   async reply(comment_text: string): Promise<ApiResponse> {
     if (!this.#actions)
-      throw new InnertubeError('Actions instance not set for this comment.');
+      throw new InnertubeError("Actions instance not set for this comment.");
 
     if (!this.reply_command)
-      throw new InnertubeError('Reply command not found.');
+      throw new InnertubeError("Reply command not found.");
 
     const dialog = this.reply_command.dialog?.as(CommentReplyDialog);
 
-    if (!dialog)
-      throw new InnertubeError('Reply dialog not found.');
+    if (!dialog) throw new InnertubeError("Reply dialog not found.");
 
     const reply_button = dialog.reply_button;
 
     if (!reply_button)
-      throw new InnertubeError('Reply button not found in the dialog.');
+      throw new InnertubeError("Reply button not found in the dialog.");
 
     if (!reply_button.endpoint)
-      throw new InnertubeError('Reply button endpoint not found.');
+      throw new InnertubeError("Reply button endpoint not found.");
 
-    return reply_button.endpoint.call(this.#actions, { commentText: comment_text });
+    return reply_button.endpoint.call(this.#actions, {
+      commentText: comment_text,
+    });
   }
 
   /**
@@ -248,24 +295,35 @@ export default class CommentView extends YTNode {
    * @returns Resolves to an ApiResponse object with the translated content, if available.
    * @throws if the Actions instance is not set for this comment or if the comment content is not found.
    */
-  async translate(target_language: string): Promise<ApiResponse & { content?: string }> {
+  async translate(
+    target_language: string,
+  ): Promise<ApiResponse & { content?: string }> {
     if (!this.#actions)
-      throw new InnertubeError('Actions instance not set for this comment.');
+      throw new InnertubeError("Actions instance not set for this comment.");
 
     if (!this.content)
-      throw new InnertubeError('Comment content not found.', { comment_id: this.comment_id });
+      throw new InnertubeError("Comment content not found.", {
+        comment_id: this.comment_id,
+      });
 
     // Emojis must be removed otherwise InnerTube throws a 400 status code at us.
-    const text = this.content.toString().replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '');
+    const text = this.content
+      .toString()
+      .replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, "");
 
     const payload = { text, target_language };
 
     const action = ProtoUtils.encodeCommentActionParams(22, payload);
-    const response = await this.#actions.execute('comment/perform_comment_action', { action });
+    const response = await this.#actions.execute(
+      "comment/perform_comment_action",
+      { action },
+    );
 
     // XXX: Should move this to Parser#parseResponse
-    const mutations = response.data.frameworkUpdates?.entityBatchUpdate?.mutations;
-    const content = mutations?.[0]?.payload?.commentEntityPayload?.translatedContent?.content;
+    const mutations =
+      response.data.frameworkUpdates?.entityBatchUpdate?.mutations;
+    const content =
+      mutations?.[0]?.payload?.commentEntityPayload?.translatedContent?.content;
 
     return { ...response, content };
   }
